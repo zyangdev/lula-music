@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0a0b;
+  --color-surface: #131316;
+  --color-surface-2: #1c1c21;
+  --color-border: #2a2a31;
+  --color-text: #ececf1;
+  --color-muted: #9a9aa5;
+  --color-accent: #8b5cf6;
+  --color-accent-hover: #a78bfa;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* lucide icons render as inline SVGs by default, which adds baseline
+   descender space and nudges them off-center inside icon-only buttons.
+   Rendering them as blocks keeps every icon optically aligned. */
+.lucide {
+  display: block;
+  flex-shrink: 0;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* WebView2 (Chromium) won't start an HTML5 drag on an element under
+   `user-select: none` unless dragging is explicitly enabled on it. */
+[draggable="true"] {
+  -webkit-user-drag: element;
+}
+[draggable="true"] img {
+  -webkit-user-drag: none;
+}
+
+/* Confirmation flash when a song is dropped onto a playlist. */
+@keyframes drop-flash {
+  0% {
+    background-color: color-mix(in oklab, var(--color-accent) 70%, transparent);
+    transform: scale(1.04);
+  }
+  60% {
+    background-color: color-mix(in oklab, var(--color-accent) 35%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+.drop-flash {
+  animation: drop-flash 0.6s ease-out;
+}
+
+/* Scrollbar */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-surface-2);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border);
+}
