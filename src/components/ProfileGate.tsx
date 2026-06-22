@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Music2, Lock } from "lucide-react";
+import { Music2, Lock, AlertTriangle } from "lucide-react";
 import { getSetting, setSetting } from "../lib/db";
 
 /**
@@ -9,7 +9,7 @@ import { getSetting, setSetting } from "../lib/db";
  * Note: this is a lightweight local convenience lock, not strong security —
  * the PIN lives in the local SQLite DB.
  */
-type Phase = "loading" | "setup" | "locked" | "ready";
+type Phase = "loading" | "setup" | "locked" | "ready" | "error";
 
 export default function ProfileGate({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<Phase>("loading");
@@ -20,11 +20,18 @@ export default function ProfileGate({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     (async () => {
-      const profile = await getSetting("profile_name");
-      const savedPin = await getSetting("profile_pin");
-      if (!profile) setPhase("setup");
-      else if (savedPin) setPhase("locked");
-      else setPhase("ready");
+      try {
+        const profile = await getSetting("profile_name");
+        const savedPin = await getSetting("profile_pin");
+        if (!profile) setPhase("setup");
+        else if (savedPin) setPhase("locked");
+        else setPhase("ready");
+      } catch (err) {
+        // DB failed to open (e.g. data from a newer app version) — show a
+        // clear message instead of hanging on a black "loading" screen.
+        setError(err instanceof Error ? err.message : String(err));
+        setPhase("error");
+      }
     })();
   }, []);
 
@@ -55,6 +62,34 @@ export default function ProfileGate({ children }: { children: React.ReactNode })
 
   if (phase === "loading") {
     return <div className="flex h-full items-center justify-center bg-bg" />;
+  }
+
+  if (phase === "error") {
+    return (
+      <div className="flex h-full items-center justify-center bg-bg p-6">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-8 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-red-500/15">
+            <AlertTriangle size={28} className="text-red-400" />
+          </div>
+          <h1 className="mb-2 text-xl font-bold">No se pudo abrir tu biblioteca</h1>
+          <p className="mb-4 text-sm text-muted">
+            Puede que tus datos sean de una versión más nueva de Lula. Actualiza la app
+            a la última versión para abrirlos.
+          </p>
+          {error && (
+            <p className="mb-4 break-words rounded-md bg-surface-2 p-2 text-left text-xs text-muted">
+              {error}
+            </p>
+          )}
+          <button
+            onClick={() => window.location.reload()}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (phase === "ready") return <>{children}</>;

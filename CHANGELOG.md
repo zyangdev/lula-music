@@ -6,6 +6,13 @@ Todas las novedades relevantes de **Lula**. El formato sigue
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-06-22
+
+### Fixed
+- La app ya no se queda en **pantalla negra** si la base de datos no se puede abrir
+  (p. ej. datos de una versión más nueva): muestra un mensaje claro con opción de
+  reintentar en lugar de colgarse en la carga inicial.
+
 ## [0.1.1] - 2026-06-22
 
 ### Added
@@ -43,6 +50,7 @@ Primera versión pública, ya con **auto-actualización**.
 - Drag & drop dentro del WebView de Tauri (`dragDropEnabled: false` + `-webkit-user-drag`).
 - Arrastre desde la mini-cola hacia las playlists del sidebar.
 
-[Unreleased]: https://github.com/zyangdev/lula-music/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/zyangdev/lula-music/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/zyangdev/lula-music/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/zyangdev/lula-music/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/zyangdev/lula-music/releases/tag/v0.1.0
