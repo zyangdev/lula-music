@@ -45,7 +45,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZFNjhCOTk1NEQwNUVGNzQKUldSMDd3Vk5sYmxvYnMrT3Vld3NSMjdodEZzTUZaUHUxVE9IZUFtSXNpSlRLRDd3NDVZaWdSaU8K",
       "endpoints": [
-        "https://github.com/USUARIO/lula/releases/latest/download/latest.json"
+        "https://github.com/zyangdev/lula-music/releases/latest/download/latest.json"
       ]
     }
   }
