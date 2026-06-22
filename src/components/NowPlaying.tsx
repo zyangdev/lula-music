@@ -18,6 +18,7 @@ import { fetchLyrics, type Lyrics } from "../lib/lyrics";
 import { formatTime } from "../lib/format";
 import SleepTimer from "./SleepTimer";
 import QueueList from "./QueueList";
+import TrimControl from "./TrimControl";
 
 function LyricsPanel() {
   const song = usePlayer((s) => s.current());
@@ -184,7 +185,7 @@ export default function NowPlaying() {
               </button>
             </div>
 
-            <div className="mt-5 flex items-center justify-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => song && playRadio(song)}
                 disabled={!song || radioLoading}
@@ -194,6 +195,7 @@ export default function NowPlaying() {
                 {radioLoading ? <Loader2 size={16} className="animate-spin" /> : <Radio size={16} />}
                 Radio
               </button>
+              <TrimControl />
               <SleepTimer />
             </div>
           </div>

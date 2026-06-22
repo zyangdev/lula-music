@@ -2,7 +2,14 @@ import { create } from "zustand";
 import type { RepeatMode, Song } from "../types";
 import { useLibrary } from "./libraryStore";
 import { getRadio } from "../lib/api";
-import { getSetting, setSetting } from "../lib/db";
+import {
+  getSetting,
+  setSetting,
+  getTrims,
+  setTrim as dbSetTrim,
+  clearTrim as dbClearTrim,
+  type Trim,
+} from "../lib/db";
 
 const PERSIST_KEY = "player_state";
 
@@ -44,8 +51,14 @@ interface PlayerState {
   radioLoading: boolean;
   sleepAt: number | null;
   error: string | null;
+  /** Per-song start/end clips, keyed by song id. */
+  trims: Record<string, Trim>;
 
   current: () => Song | null;
+  currentTrim: () => Trim | null;
+  loadTrims: () => Promise<void>;
+  setTrim: (start: number, end: number | null) => void;
+  clearTrim: () => void;
   playNow: (song: Song) => void;
   playQueue: (songs: Song[], startIndex?: number) => void;
   playRadio: (seed: Song) => Promise<void>;
@@ -73,7 +86,10 @@ export const usePlayer = create<PlayerState>((set, get) => {
     const song = get().current();
     if (!song || !audio) return;
     schedulePersist();
-    set({ loadingTrack: true, error: null, currentTime: seekTo, duration: song.duration ?? 0 });
+    // A restored position (seekTo) wins; otherwise start at the song's trim.
+    const trimStart = get().trims[song.id]?.start ?? 0;
+    const startAt = seekTo > 0 ? seekTo : trimStart;
+    set({ loadingTrack: true, error: null, currentTime: startAt, duration: song.duration ?? 0 });
     try {
       if (!streamResolver) {
         // Fase 0: no backend yet — keep metadata visible, no audio.
@@ -86,10 +102,10 @@ export const usePlayer = create<PlayerState>((set, get) => {
       audio.src = url;
       audio.load();
       loadedId = song.id;
-      if (seekTo > 0) {
-        // Apply the resume position once the media knows its duration.
+      if (startAt > 0) {
+        // Apply the resume/trim start once the media knows its duration.
         const applySeek = () => {
-          audio.currentTime = seekTo;
+          audio.currentTime = startAt;
           audio.removeEventListener("loadedmetadata", applySeek);
         };
         audio.addEventListener("loadedmetadata", applySeek);
@@ -145,7 +161,19 @@ export const usePlayer = create<PlayerState>((set, get) => {
 
   if (audio) {
     audio.addEventListener("timeupdate", () => {
-      set({ currentTime: audio.currentTime });
+      const t = audio.currentTime;
+      set({ currentTime: t });
+      // Trim end: stop the track early (loop or advance like a natural end).
+      const song = get().current();
+      const trim = song ? get().trims[song.id] : undefined;
+      if (trim?.end != null && t >= trim.end) {
+        if (get().repeat === "one") {
+          audio.currentTime = trim.start ?? 0;
+        } else {
+          get().next();
+        }
+        return;
+      }
       // Persist the playback position at most once every 5s while playing.
       const now = Date.now();
       if (now - lastTimePersist > 5000) {
@@ -198,10 +226,40 @@ export const usePlayer = create<PlayerState>((set, get) => {
     radioLoading: false,
     sleepAt: null,
     error: null,
+    trims: {},
 
     current: () => {
       const { queue, index } = get();
       return index >= 0 && index < queue.length ? queue[index] : null;
+    },
+
+    currentTrim: () => {
+      const song = get().current();
+      return song ? (get().trims[song.id] ?? null) : null;
+    },
+
+    loadTrims: async () => set({ trims: await getTrims() }),
+
+    setTrim: (start, end) => {
+      const song = get().current();
+      if (!song) return;
+      const clean = {
+        start: Math.max(0, start),
+        end: end != null ? Math.max(start, end) : null,
+      };
+      set({ trims: { ...get().trims, [song.id]: clean } });
+      void dbSetTrim(song, clean.start, clean.end);
+      // If we're before the new start, jump forward so it takes effect now.
+      if (audio && audio.currentTime < clean.start) audio.currentTime = clean.start;
+    },
+
+    clearTrim: () => {
+      const song = get().current();
+      if (!song) return;
+      const next = { ...get().trims };
+      delete next[song.id];
+      set({ trims: next });
+      void dbClearTrim(song.id);
     },
 
     playNow: (song) => {

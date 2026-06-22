@@ -32,7 +32,8 @@ async fn get_radio(
 }
 
 fn migrations() -> Vec<Migration> {
-    vec![Migration {
+    vec![
+        Migration {
         version: 1,
         description: "create_library_tables",
         sql: "
@@ -76,7 +77,20 @@ fn migrations() -> Vec<Migration> {
             );
         ",
         kind: MigrationKind::Up,
-    }]
+        },
+        Migration {
+            version: 2,
+            description: "create_song_trims",
+            sql: "
+            CREATE TABLE IF NOT EXISTS song_trims (
+                song_id   TEXT PRIMARY KEY REFERENCES songs(id) ON DELETE CASCADE,
+                start_sec REAL NOT NULL DEFAULT 0,
+                end_sec   REAL
+            );
+        ",
+            kind: MigrationKind::Up,
+        },
+    ]
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

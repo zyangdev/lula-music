@@ -32,6 +32,7 @@ void useLibrary
   .getState()
   .init()
   .then(() => usePlayer.getState().restore());
+void usePlayer.getState().loadTrims();
 void useUi.getState().loadAccent();
 
 const router = createHashRouter([

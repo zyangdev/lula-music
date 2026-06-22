@@ -141,6 +141,38 @@ export async function reorderPlaylist(playlistId: number, orderedSongIds: string
   }
 }
 
+// ---------- Trims (start/end clip per song) ----------
+
+export interface Trim {
+  /** Seconds into the track where playback should start. */
+  start: number;
+  /** Seconds where playback should stop, or null for the natural end. */
+  end: number | null;
+}
+
+export async function getTrims(): Promise<Record<string, Trim>> {
+  const db = await getDb();
+  const rows = await db.select<{ song_id: string; start_sec: number; end_sec: number | null }[]>(
+    "SELECT song_id, start_sec, end_sec FROM song_trims"
+  );
+  return Object.fromEntries(rows.map((r) => [r.song_id, { start: r.start_sec, end: r.end_sec }]));
+}
+
+export async function setTrim(song: Song, start: number, end: number | null): Promise<void> {
+  const db = await getDb();
+  await upsertSong(song);
+  await db.execute(
+    `INSERT INTO song_trims (song_id, start_sec, end_sec) VALUES ($1, $2, $3)
+     ON CONFLICT(song_id) DO UPDATE SET start_sec = excluded.start_sec, end_sec = excluded.end_sec`,
+    [song.id, start, end]
+  );
+}
+
+export async function clearTrim(songId: string): Promise<void> {
+  const db = await getDb();
+  await db.execute("DELETE FROM song_trims WHERE song_id = $1", [songId]);
+}
+
 // ---------- History ----------
 
 export async function addHistory(song: Song): Promise<void> {
