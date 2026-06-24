@@ -6,6 +6,17 @@ Todas las novedades relevantes de **Lula**. El formato sigue
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-06-24
+
+### Added
+- 📤 **Exportar / importar playlists** a un archivo `.lula.json`: respáldalas o
+  compártelas entre equipos. Desde **Biblioteca** (Importar / Exportar todas),
+  el detalle de una playlist (Exportar) y el menú contextual de cada playlist.
+- **Avisos (toasts)** para confirmar acciones como export/import.
+- 📱 **App para Android** (APK directo): misma interfaz, con extracción de
+  YouTube nativa mediante **NewPipeExtractor**. UI adaptada a móvil (menú
+  lateral deslizable). _Se distribuye aparte del instalador de escritorio._
+
 ## [0.1.2] - 2026-06-22
 
 ### Fixed
@@ -50,7 +61,8 @@ Primera versión pública, ya con **auto-actualización**.
 - Drag & drop dentro del WebView de Tauri (`dragDropEnabled: false` + `-webkit-user-drag`).
 - Arrastre desde la mini-cola hacia las playlists del sidebar.
 
-[Unreleased]: https://github.com/zyangdev/lula-music/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/zyangdev/lula-music/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/zyangdev/lula-music/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/zyangdev/lula-music/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/zyangdev/lula-music/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/zyangdev/lula-music/releases/tag/v0.1.0
