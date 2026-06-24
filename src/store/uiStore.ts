@@ -22,12 +22,16 @@ function applyAccent(color: string) {
 
 interface UiState {
   nowPlayingOpen: boolean;
+  /** Mobile-only: whether the sidebar drawer is open. */
+  sidebarOpen: boolean;
   accent: string;
   /** Song currently being dragged (e.g. onto a sidebar playlist). */
   draggingSong: Song | null;
   openNowPlaying: () => void;
   closeNowPlaying: () => void;
   toggleNowPlaying: () => void;
+  toggleSidebar: () => void;
+  closeSidebar: () => void;
   setAccent: (color: string) => void;
   loadAccent: () => Promise<void>;
   setDraggingSong: (song: Song | null) => void;
@@ -35,12 +39,15 @@ interface UiState {
 
 export const useUi = create<UiState>((set) => ({
   nowPlayingOpen: false,
+  sidebarOpen: false,
   accent: DEFAULT_ACCENT,
   draggingSong: null,
 
   openNowPlaying: () => set({ nowPlayingOpen: true }),
   closeNowPlaying: () => set({ nowPlayingOpen: false }),
   toggleNowPlaying: () => set((s) => ({ nowPlayingOpen: !s.nowPlayingOpen })),
+  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  closeSidebar: () => set({ sidebarOpen: false }),
 
   setDraggingSong: (song) => set({ draggingSong: song }),
 

@@ -141,6 +141,74 @@ export async function reorderPlaylist(playlistId: number, orderedSongIds: string
   }
 }
 
+// ---------- Export / Import ----------
+
+const EXPORT_FORMAT = "lula-playlist";
+const EXPORT_VERSION = 1;
+
+interface PlaylistExport {
+  name: string;
+  songs: Song[];
+}
+
+interface ExportFile {
+  format: string;
+  version: number;
+  exported_at: number;
+  playlists: PlaylistExport[];
+}
+
+/** Serialize one or more playlists (with their songs) to a JSON string. */
+export async function exportPlaylists(ids: number[]): Promise<string> {
+  const all = await listPlaylists();
+  const playlists: PlaylistExport[] = [];
+  for (const id of ids) {
+    const meta = all.find((p) => p.id === id);
+    if (!meta) continue;
+    const songs = await getPlaylistSongs(id);
+    playlists.push({ name: meta.name, songs });
+  }
+  const file: ExportFile = {
+    format: EXPORT_FORMAT,
+    version: EXPORT_VERSION,
+    exported_at: Date.now(),
+    playlists,
+  };
+  return JSON.stringify(file, null, 2);
+}
+
+/**
+ * Import playlists from a JSON string produced by {@link exportPlaylists}.
+ * Each playlist is created anew (duplicate names allowed). Returns the number
+ * of playlists imported.
+ */
+export async function importPlaylists(json: string): Promise<number> {
+  let file: ExportFile;
+  try {
+    file = JSON.parse(json);
+  } catch {
+    throw new Error("El archivo no es un JSON válido.");
+  }
+  if (file?.format !== EXPORT_FORMAT || !Array.isArray(file.playlists)) {
+    throw new Error("El archivo no es una exportación de playlists de Lula.");
+  }
+  if (file.version > EXPORT_VERSION) {
+    throw new Error("El archivo es de una versión más nueva de Lula.");
+  }
+
+  let imported = 0;
+  for (const pl of file.playlists) {
+    if (!pl || typeof pl.name !== "string" || !Array.isArray(pl.songs)) continue;
+    const playlistId = await createPlaylist(pl.name || "Playlist importada");
+    for (const song of pl.songs) {
+      if (!song || typeof song.id !== "string") continue;
+      await addToPlaylist(playlistId, song);
+    }
+    imported++;
+  }
+  return imported;
+}
+
 // ---------- Trims (start/end clip per song) ----------
 
 export interface Trim {

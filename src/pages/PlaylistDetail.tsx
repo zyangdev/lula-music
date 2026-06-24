@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ListMusic, Trash2 } from "lucide-react";
+import { ListMusic, Trash2, Upload } from "lucide-react";
 import type { Song } from "../types";
 import { getPlaylistSongs } from "../lib/db";
 import { useLibrary } from "../store/libraryStore";
+import { toast } from "../store/toastStore";
 import SongsScreen from "../components/SongsScreen";
 
 export default function PlaylistDetail() {
@@ -16,6 +17,7 @@ export default function PlaylistDetail() {
   const removeFromPlaylist = useLibrary((s) => s.removeFromPlaylist);
   const deletePlaylist = useLibrary((s) => s.deletePlaylist);
   const reorderPlaylist = useLibrary((s) => s.reorderPlaylist);
+  const exportPlaylist = useLibrary((s) => s.exportPlaylist);
   const playlist = playlists.find((p) => p.id === playlistId);
 
   const [songs, setSongs] = useState<Song[]>([]);
@@ -33,6 +35,15 @@ export default function PlaylistDetail() {
   async function handleDelete() {
     await deletePlaylist(playlistId);
     navigate("/library");
+  }
+
+  async function handleExport() {
+    try {
+      const path = await exportPlaylist(playlistId);
+      if (path) toast.success("Playlist exportada.");
+    } catch (e) {
+      toast.error(`No se pudo exportar: ${e}`);
+    }
   }
 
   function handleReorder(from: number, to: number) {
@@ -61,13 +72,22 @@ export default function PlaylistDetail() {
       onReorder={handleReorder}
       onDropSong={(song) => void addToPlaylist(playlistId, song)}
       headerExtra={
-        <button
-          onClick={handleDelete}
-          className="flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm text-muted hover:border-red-400 hover:text-red-400"
-          title="Eliminar playlist"
-        >
-          <Trash2 size={16} /> Eliminar
-        </button>
+        <>
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm text-muted hover:border-accent hover:text-text"
+            title="Exportar playlist"
+          >
+            <Upload size={16} /> Exportar
+          </button>
+          <button
+            onClick={handleDelete}
+            className="flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm text-muted hover:border-red-400 hover:text-red-400"
+            title="Eliminar playlist"
+          >
+            <Trash2 size={16} /> Eliminar
+          </button>
+        </>
       }
     />
   );

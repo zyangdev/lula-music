@@ -9,6 +9,16 @@
     "main"
   ],
   "permissions": [
-    "updater:default"
+    "updater:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "binaries/yt-dlp",
+          "sidecar": true,
+          "args": true
+        }
+      ]
+    }
   ]
 }

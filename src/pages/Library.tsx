@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, History, Download, Plus, ListMusic, Trash2 } from "lucide-react";
+import { Heart, History, Download, Plus, ListMusic, Trash2, Upload, FileDown } from "lucide-react";
 import { useLibrary } from "../store/libraryStore";
 import { openContextMenu } from "../store/contextMenuStore";
 import { buildPlaylistMenu } from "../lib/menus";
+import { toast } from "../store/toastStore";
 
 export default function Library() {
   const playlists = useLibrary((s) => s.playlists);
   const createPlaylist = useLibrary((s) => s.createPlaylist);
   const renamePlaylist = useLibrary((s) => s.renamePlaylist);
   const deletePlaylist = useLibrary((s) => s.deletePlaylist);
+  const exportAllPlaylists = useLibrary((s) => s.exportAllPlaylists);
+  const importPlaylists = useLibrary((s) => s.importPlaylists);
   const [name, setName] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -26,6 +29,25 @@ export default function Library() {
     if (!name.trim()) return;
     await createPlaylist(name);
     setName("");
+  }
+
+  async function handleImport() {
+    try {
+      const count = await importPlaylists();
+      if (count != null) toast.success(`${count} playlist(s) importada(s).`);
+    } catch (e) {
+      toast.error(`No se pudo importar: ${e}`);
+    }
+  }
+
+  async function handleExportAll() {
+    try {
+      const path = await exportAllPlaylists();
+      if (path) toast.success("Playlists exportadas.");
+      else if (playlists.length === 0) toast.error("No tienes playlists para exportar.");
+    } catch (e) {
+      toast.error(`No se pudo exportar: ${e}`);
+    }
   }
 
   const cards = [
@@ -55,6 +77,24 @@ export default function Library() {
 
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Playlists</h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleImport}
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted hover:border-accent hover:text-text"
+            title="Importar playlists desde un archivo"
+          >
+            <Upload size={15} /> Importar
+          </button>
+          {playlists.length > 0 && (
+            <button
+              onClick={handleExportAll}
+              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted hover:border-accent hover:text-text"
+              title="Exportar todas las playlists"
+            >
+              <FileDown size={15} /> Exportar todas
+            </button>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleCreate} className="mb-4 flex max-w-md items-center gap-2">

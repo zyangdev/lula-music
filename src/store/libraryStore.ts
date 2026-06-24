@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type { Song } from "../types";
 import * as db from "../lib/db";
 import type { Playlist } from "../lib/db";
+import { saveTextFile, openTextFile } from "../lib/api";
 
 interface LibraryState {
   ready: boolean;
@@ -21,8 +22,16 @@ interface LibraryState {
   addToPlaylist: (playlistId: number, song: Song) => Promise<void>;
   removeFromPlaylist: (playlistId: number, songId: string) => Promise<void>;
   reorderPlaylist: (playlistId: number, orderedSongIds: string[]) => Promise<void>;
+  exportPlaylist: (id: number) => Promise<string | null>;
+  exportAllPlaylists: () => Promise<string | null>;
+  importPlaylists: () => Promise<number | null>;
   download: (song: Song) => Promise<void>;
   recordPlay: (song: Song) => Promise<void>;
+}
+
+/** Strip characters that are invalid in filenames across platforms. */
+function safeFileName(name: string): string {
+  return name.replace(/[\\/:*?"<>|]/g, "_").trim() || "playlist";
 }
 
 export const useLibrary = create<LibraryState>((set, get) => ({
@@ -81,6 +90,27 @@ export const useLibrary = create<LibraryState>((set, get) => ({
 
   reorderPlaylist: async (playlistId, orderedSongIds) => {
     await db.reorderPlaylist(playlistId, orderedSongIds);
+  },
+
+  exportPlaylist: async (id) => {
+    const meta = get().playlists.find((p) => p.id === id);
+    const json = await db.exportPlaylists([id]);
+    return saveTextFile(json, `${safeFileName(meta?.name ?? "playlist")}.lula.json`);
+  },
+
+  exportAllPlaylists: async () => {
+    const ids = get().playlists.map((p) => p.id);
+    if (ids.length === 0) return null;
+    const json = await db.exportPlaylists(ids);
+    return saveTextFile(json, "playlists-lula.lula.json");
+  },
+
+  importPlaylists: async () => {
+    const json = await openTextFile();
+    if (json == null) return null;
+    const count = await db.importPlaylists(json);
+    await get().refreshPlaylists();
+    return count;
   },
 
   download: async (song) => {

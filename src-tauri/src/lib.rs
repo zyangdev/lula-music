@@ -1,7 +1,21 @@
+mod playlist_io;
 mod youtube;
+mod ytmobile;
 
 use tauri_plugin_sql::{Migration, MigrationKind};
 use youtube::Song;
+
+/// Run an Android plugin call off the async runtime (the bridge blocks).
+#[cfg(target_os = "android")]
+async fn on_android<T, F>(f: F) -> Result<T, String>
+where
+    T: Send + 'static,
+    F: FnOnce() -> Result<T, String> + Send + 'static,
+{
+    tauri::async_runtime::spawn_blocking(f)
+        .await
+        .map_err(|e| e.to_string())?
+}
 
 #[tauri::command]
 async fn search_songs(
@@ -9,16 +23,26 @@ async fn search_songs(
     query: String,
     limit: Option<u32>,
 ) -> Result<Vec<Song>, String> {
-    youtube::search(&app, &query, limit.unwrap_or(20)).await
+    let limit = limit.unwrap_or(20);
+    #[cfg(target_os = "android")]
+    return on_android(move || ytmobile::search(&app, &query, limit)).await;
+    #[cfg(not(target_os = "android"))]
+    youtube::search(&app, &query, limit).await
 }
 
 #[tauri::command]
 async fn resolve_stream(app: tauri::AppHandle, video_id: String) -> Result<String, String> {
+    #[cfg(target_os = "android")]
+    return on_android(move || ytmobile::resolve_stream(&app, &video_id)).await;
+    #[cfg(not(target_os = "android"))]
     youtube::resolve_stream(&app, &video_id).await
 }
 
 #[tauri::command]
 async fn download_song(app: tauri::AppHandle, video_id: String) -> Result<String, String> {
+    #[cfg(target_os = "android")]
+    return on_android(move || ytmobile::download(&app, &video_id)).await;
+    #[cfg(not(target_os = "android"))]
     youtube::download(&app, &video_id).await
 }
 
@@ -28,7 +52,11 @@ async fn get_radio(
     video_id: String,
     limit: Option<u32>,
 ) -> Result<Vec<Song>, String> {
-    youtube::radio(&app, &video_id, limit.unwrap_or(25)).await
+    let limit = limit.unwrap_or(25);
+    #[cfg(target_os = "android")]
+    return on_android(move || ytmobile::radio(&app, &video_id, limit)).await;
+    #[cfg(not(target_os = "android"))]
+    youtube::radio(&app, &video_id, limit).await
 }
 
 fn migrations() -> Vec<Migration> {
@@ -95,21 +123,44 @@ fn migrations() -> Vec<Migration> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    #[allow(unused_mut)]
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_sql::Builder::default()
                 .add_migrations("sqlite:lula.db", migrations())
                 .build(),
-        )
+        );
+
+    // El sidecar yt-dlp (plugin shell) solo en escritorio.
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        builder = builder.plugin(tauri_plugin_shell::init());
+    }
+
+    // El updater solo existe en escritorio (ver Cargo.toml). En Android/iOS
+    // la actualización se gestiona por separado (descarga del APK).
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    }
+
+    // En Android la extracción de YouTube la hace el plugin Kotlin (NewPipeExtractor).
+    #[cfg(target_os = "android")]
+    {
+        builder = builder.plugin(ytmobile::init());
+    }
+
+    builder
         .invoke_handler(tauri::generate_handler![
             search_songs,
             resolve_stream,
             download_song,
-            get_radio
+            get_radio,
+            playlist_io::write_text_file,
+            playlist_io::read_text_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

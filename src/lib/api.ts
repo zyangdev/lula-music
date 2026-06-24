@@ -1,7 +1,34 @@
 import { invoke } from "@tauri-apps/api/core";
+import { save, open } from "@tauri-apps/plugin-dialog";
 import type { Song } from "../types";
 
-/** Search music on YouTube (via the Rust/yt-dlp backend). */
+const PLAYLIST_FILTER = [{ name: "Playlist de Lula", extensions: ["lula.json", "json"] }];
+
+/**
+ * Ask the user where to save, then write `contents` there.
+ * Returns the chosen path, or null if the user cancelled.
+ */
+export async function saveTextFile(
+  contents: string,
+  defaultName: string
+): Promise<string | null> {
+  const path = await save({ defaultPath: defaultName, filters: PLAYLIST_FILTER });
+  if (!path) return null;
+  await invoke("write_text_file", { path, contents });
+  return path;
+}
+
+/**
+ * Ask the user to pick a file, then read it as text.
+ * Returns the contents, or null if the user cancelled.
+ */
+export async function openTextFile(): Promise<string | null> {
+  const path = await open({ multiple: false, directory: false, filters: PLAYLIST_FILTER });
+  if (!path || typeof path !== "string") return null;
+  return invoke<string>("read_text_file", { path });
+}
+
+/** Search music on YouTube (yt-dlp on desktop, NewPipeExtractor on Android). */
 export function searchSongs(query: string, limit = 20): Promise<Song[]> {
   return invoke<Song[]>("search_songs", { query, limit });
 }

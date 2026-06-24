@@ -1,16 +1,14 @@
 //! YouTube access layer.
 //!
-//! Fase 1 uses the bundled `yt-dlp` sidecar for both search and stream
-//! resolution — it handles signature/`n`-param deciphering robustly so we
-//! don't have to. A native InnerTube client (cleaner YT Music results) can
-//! replace the search path later without touching the frontend contract.
+//! Desktop uses the bundled `yt-dlp` sidecar for search and stream resolution —
+//! it handles signature/`n`-param deciphering robustly. On Android there is no
+//! yt-dlp binary; extraction is provided natively by a Kotlin plugin
+//! (NewPipeExtractor) — see `src-tauri/android` / the mobile plugin bridge.
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
-use tauri_plugin_shell::ShellExt;
 
 /// A playable track. Mirrors the `Song` interface in the frontend.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Song {
     pub id: String,
     pub title: String,
@@ -21,8 +19,16 @@ pub struct Song {
     pub duration: Option<f64>,
 }
 
+// Everything below is the desktop (yt-dlp) implementation; Android uses the
+// Kotlin NewPipeExtractor plugin (see `ytmobile.rs`).
+#[cfg(not(target_os = "android"))]
+mod ytdlp {
+use super::Song;
+use tauri::{AppHandle, Manager};
+use tauri_plugin_shell::ShellExt;
+
 /// Raw shape of a `--flat-playlist --dump-json` entry (only fields we use).
-#[derive(Debug, Deserialize)]
+#[derive(Debug, serde::Deserialize)]
 struct FlatEntry {
     id: Option<String>,
     title: Option<String>,
@@ -202,3 +208,7 @@ pub async fn download(app: &AppHandle, video_id: &str) -> Result<String, String>
         )),
     }
 }
+} // mod ytdlp
+
+#[cfg(not(target_os = "android"))]
+pub use ytdlp::{download, radio, resolve_stream, search};

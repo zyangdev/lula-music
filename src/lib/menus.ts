@@ -11,6 +11,7 @@ import {
   X,
   Pencil,
   Trash2,
+  Upload,
 } from "lucide-react";
 import type { MenuItem } from "../store/contextMenuStore";
 import type { Song } from "../types";
@@ -18,6 +19,7 @@ import type { Playlist } from "./db";
 import { getPlaylistSongs } from "./db";
 import { usePlayer } from "../store/playerStore";
 import { useLibrary } from "../store/libraryStore";
+import { toast } from "../store/toastStore";
 
 export interface SongMenuContext {
   /** Row lives in the play queue at this index (adds "Quitar de la cola"). */
@@ -106,6 +108,18 @@ export function buildPlaylistMenu(
       },
     },
     { label: "Renombrar", icon: Pencil, onClick: ctx.onRename },
+    {
+      label: "Exportar",
+      icon: Upload,
+      onClick: async () => {
+        try {
+          const path = await useLibrary.getState().exportPlaylist(playlist.id);
+          if (path) toast.success(`Playlist «${playlist.name}» exportada.`);
+        } catch (e) {
+          toast.error(`No se pudo exportar: ${e}`);
+        }
+      },
+    },
     { separator: true },
     {
       label: "Eliminar",

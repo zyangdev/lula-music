@@ -6,17 +6,8 @@
   "permissions": [
     "core:default",
     "opener:default",
+    "dialog:default",
     "sql:default",
-    "sql:allow-execute",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "binaries/yt-dlp",
-          "sidecar": true,
-          "args": true
-        }
-      ]
-    }
+    "sql:allow-execute"
   ]
 }

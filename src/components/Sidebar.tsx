@@ -82,6 +82,8 @@ export default function Sidebar() {
   const addToPlaylist = useLibrary((s) => s.addToPlaylist);
   const renamePlaylist = useLibrary((s) => s.renamePlaylist);
   const draggingSong = useUi((s) => s.draggingSong);
+  const sidebarOpen = useUi((s) => s.sidebarOpen);
+  const closeSidebar = useUi((s) => s.closeSidebar);
   const [dropId, setDropId] = useState<number | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -99,9 +101,19 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-surface">
+    <aside
+      className={clsx(
+        "flex w-60 shrink-0 flex-col border-r border-border bg-surface",
+        // Mobile: off-canvas drawer that slides in. Desktop (md+): static column.
+        "fixed inset-y-0 left-0 z-40 transition-transform md:static md:z-auto md:translate-x-0",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}
+    >
       {/* Brand + main navigation */}
-      <div className="flex flex-col gap-1 p-3 pb-2">
+      <div
+        className="flex flex-col gap-1 p-3 pb-2"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.75rem)" }}
+      >
         <div className="mb-1 flex items-center gap-3 px-3 py-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent">
             <Music2 size={18} className="text-white" />
@@ -111,7 +123,7 @@ export default function Sidebar() {
 
         <nav className="flex flex-col gap-1">
           {links.map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} className={navClass}>
+            <NavLink key={to} to={to} end={end} className={navClass} onClick={closeSidebar}>
               <Icon size={18} />
               {label}
             </NavLink>
@@ -123,7 +135,7 @@ export default function Sidebar() {
       <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-2">
         <nav className="flex flex-col gap-1">
           {shortcuts.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={navClass}>
+            <NavLink key={to} to={to} className={navClass} onClick={closeSidebar}>
               <Icon size={18} />
               {label}
             </NavLink>
@@ -162,6 +174,7 @@ export default function Sidebar() {
                 <NavLink
                   key={p.id}
                   to={`/library/playlist/${p.id}`}
+                  onClick={closeSidebar}
                   onContextMenu={(e) =>
                     openContextMenu(
                       e,

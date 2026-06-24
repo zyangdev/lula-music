@@ -18,7 +18,8 @@ import { resolveStream } from "./lib/api";
 import "./styles.css";
 
 // Resolve playback source: prefer a downloaded local file (offline),
-// otherwise resolve a fresh stream URL via the Rust/yt-dlp backend.
+// otherwise resolve a fresh stream URL via the platform backend
+// (yt-dlp on desktop, NewPipeExtractor on Android).
 setStreamResolver(async (videoId) => {
   const localPath = useLibrary.getState().downloadMap[videoId];
   if (localPath) return convertFileSrc(localPath);
