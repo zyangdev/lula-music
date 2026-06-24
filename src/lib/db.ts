@@ -183,18 +183,7 @@ export async function exportPlaylists(ids: number[]): Promise<string> {
  * of playlists imported.
  */
 export async function importPlaylists(json: string): Promise<number> {
-  let file: ExportFile;
-  try {
-    file = JSON.parse(json);
-  } catch {
-    throw new Error("El archivo no es un JSON válido.");
-  }
-  if (file?.format !== EXPORT_FORMAT || !Array.isArray(file.playlists)) {
-    throw new Error("El archivo no es una exportación de playlists de Lula.");
-  }
-  if (file.version > EXPORT_VERSION) {
-    throw new Error("El archivo es de una versión más nueva de Lula.");
-  }
+  const file = parseExportFile(json);
 
   let imported = 0;
   for (const pl of file.playlists) {
@@ -207,6 +196,42 @@ export async function importPlaylists(json: string): Promise<number> {
     imported++;
   }
   return imported;
+}
+
+/** Validate + parse an export file, throwing a friendly error on bad input. */
+function parseExportFile(json: string): ExportFile {
+  let file: ExportFile;
+  try {
+    file = JSON.parse(json);
+  } catch {
+    throw new Error("El archivo no es un JSON válido.");
+  }
+  if (file?.format !== EXPORT_FORMAT || !Array.isArray(file.playlists)) {
+    throw new Error("El archivo no es una exportación de playlists de Lula.");
+  }
+  if (file.version > EXPORT_VERSION) {
+    throw new Error("El archivo es de una versión más nueva de Lula.");
+  }
+  return file;
+}
+
+/**
+ * Merge all songs from an export file into an existing playlist. Idempotent:
+ * songs already in the playlist are skipped (no duplicates). Returns how many
+ * songs the file contained.
+ */
+export async function importMergeIntoPlaylist(playlistId: number, json: string): Promise<number> {
+  const file = parseExportFile(json);
+  let songs = 0;
+  for (const pl of file.playlists) {
+    if (!pl || !Array.isArray(pl.songs)) continue;
+    for (const song of pl.songs) {
+      if (!song || typeof song.id !== "string") continue;
+      await addToPlaylist(playlistId, song);
+      songs++;
+    }
+  }
+  return songs;
 }
 
 // ---------- Trims (start/end clip per song) ----------
@@ -239,23 +264,6 @@ export async function setTrim(song: Song, start: number, end: number | null): Pr
 export async function clearTrim(songId: string): Promise<void> {
   const db = await getDb();
   await db.execute("DELETE FROM song_trims WHERE song_id = $1", [songId]);
-}
-
-// ---------- History ----------
-
-export async function addHistory(song: Song): Promise<void> {
-  const db = await getDb();
-  await upsertSong(song);
-  await db.execute("INSERT INTO history (song_id, played_at) VALUES ($1, $2)", [song.id, Date.now()]);
-}
-
-export async function getHistory(limit = 50): Promise<Song[]> {
-  const db = await getDb();
-  return db.select<Song[]>(
-    `SELECT s.* FROM history h JOIN songs s ON s.id = h.song_id
-     GROUP BY s.id ORDER BY MAX(h.played_at) DESC LIMIT $1`,
-    [limit]
-  );
 }
 
 // ---------- Downloads ----------

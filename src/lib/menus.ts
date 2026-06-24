@@ -120,6 +120,18 @@ export function buildPlaylistMenu(
         }
       },
     },
+    {
+      label: "Importar y fusionar…",
+      icon: Download,
+      onClick: async () => {
+        try {
+          const n = await useLibrary.getState().mergeImportIntoPlaylist(playlist.id);
+          if (n != null) toast.success(`${n} canción(es) fusionada(s) en «${playlist.name}».`);
+        } catch (e) {
+          toast.error(`No se pudo importar: ${e}`);
+        }
+      },
+    },
     { separator: true },
     {
       label: "Eliminar",

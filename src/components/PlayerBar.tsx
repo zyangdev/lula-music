@@ -79,7 +79,7 @@ export default function PlayerBar() {
         }}
         onDragEnd={() => setDraggingSong(null)}
         onContextMenu={(e) => song && openContextMenu(e, buildSongMenu(song))}
-        className="group flex w-60 min-w-0 items-center gap-3 text-left disabled:cursor-default"
+        className="group flex min-w-0 flex-1 items-center gap-3 text-left disabled:cursor-default md:w-60 md:flex-none"
       >
         <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface-2">
           {song?.thumbnail ? (
@@ -100,11 +100,11 @@ export default function PlayerBar() {
       </button>
 
       {/* Controls + seek */}
-      <div className="flex flex-1 flex-col items-center gap-1">
+      <div className="flex flex-none flex-col items-center gap-1 md:flex-1">
         <div className="flex items-center gap-4">
           <button
             onClick={toggleShuffle}
-            className={clsx("transition-colors", shuffle ? "text-accent" : "text-muted hover:text-text")}
+            className={clsx("hidden transition-colors md:block", shuffle ? "text-accent" : "text-muted hover:text-text")}
             title="Aleatorio"
           >
             <Shuffle size={18} />
@@ -130,14 +130,14 @@ export default function PlayerBar() {
           </button>
           <button
             onClick={cycleRepeat}
-            className={clsx("transition-colors", repeat !== "off" ? "text-accent" : "text-muted hover:text-text")}
+            className={clsx("hidden transition-colors md:block", repeat !== "off" ? "text-accent" : "text-muted hover:text-text")}
             title={`Repetir: ${repeat}`}
           >
             {repeat === "one" ? <Repeat1 size={18} /> : <Repeat size={18} />}
           </button>
         </div>
 
-        <div className="flex w-full max-w-xl items-center gap-2">
+        <div className="hidden w-full max-w-xl items-center gap-2 md:flex">
           <span className="w-10 text-right text-xs tabular-nums text-muted">
             {formatTime(currentTime)}
           </span>
@@ -154,8 +154,8 @@ export default function PlayerBar() {
         </div>
       </div>
 
-      {/* Queue + Autoplay + Volume */}
-      <div className="flex w-60 items-center justify-end gap-2">
+      {/* Queue + Autoplay + Volume (desktop only; on mobile use Now Playing) */}
+      <div className="hidden w-60 items-center justify-end gap-2 md:flex">
         <div className="relative" ref={queueRef}>
           <button
             onClick={() => setQueueOpen((o) => !o)}

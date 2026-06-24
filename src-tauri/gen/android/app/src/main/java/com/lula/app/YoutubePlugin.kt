@@ -30,6 +30,17 @@ internal class IdArgs {
     var limit: Int = 25
 }
 
+@InvokeArg
+internal class ReadFileArgs {
+    lateinit var uri: String
+}
+
+@InvokeArg
+internal class WriteFileArgs {
+    lateinit var uri: String
+    lateinit var contents: String
+}
+
 /**
  * Native YouTube extraction for Android via NewPipeExtractor. Mirrors the
  * desktop `yt-dlp` commands so the frontend contract is identical.
@@ -61,6 +72,41 @@ class YoutubePlugin(private val activity: Activity) : Plugin(activity) {
                 invoke.reject(e.message ?: e.toString())
             }
         }.start()
+    }
+
+    /** Like runBg but without NewPipe init (for plain file IO). */
+    private fun runIO(invoke: Invoke, block: () -> JSObject) {
+        Thread {
+            try {
+                invoke.resolve(block())
+            } catch (e: Exception) {
+                invoke.reject(e.message ?: e.toString())
+            }
+        }.start()
+    }
+
+    /** Read a SAF/content-uri file as UTF-8 text (the desktop uses std::fs). */
+    @Command
+    fun readTextFile(invoke: Invoke) {
+        val args = invoke.parseArgs(ReadFileArgs::class.java)
+        runIO(invoke) {
+            val text = activity.contentResolver.openInputStream(Uri.parse(args.uri))
+                ?.use { it.readBytes().toString(Charsets.UTF_8) }
+                ?: throw RuntimeException("no se pudo abrir el archivo")
+            JSObject().apply { put("contents", text) }
+        }
+    }
+
+    /** Write UTF-8 text to a SAF/content-uri file. */
+    @Command
+    fun writeTextFile(invoke: Invoke) {
+        val args = invoke.parseArgs(WriteFileArgs::class.java)
+        runIO(invoke) {
+            (activity.contentResolver.openOutputStream(Uri.parse(args.uri), "wt")
+                ?: throw RuntimeException("no se pudo abrir el archivo para escribir"))
+                .use { it.write(args.contents.toByteArray(Charsets.UTF_8)) }
+            JSObject()
+        }
     }
 
     @Command

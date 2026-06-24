@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, History, Download, Plus, ListMusic, Trash2, Upload, FileDown } from "lucide-react";
+import { Heart, Download, Plus, ListMusic, Trash2, Upload, FileDown } from "lucide-react";
 import { useLibrary } from "../store/libraryStore";
 import { openContextMenu } from "../store/contextMenuStore";
 import { buildPlaylistMenu } from "../lib/menus";
@@ -36,6 +36,7 @@ export default function Library() {
       const count = await importPlaylists();
       if (count != null) toast.success(`${count} playlist(s) importada(s).`);
     } catch (e) {
+      console.error("[lula] import error:", e);
       toast.error(`No se pudo importar: ${e}`);
     }
   }
@@ -52,7 +53,6 @@ export default function Library() {
 
   const cards = [
     { to: "/library/liked", label: "Me gusta", icon: Heart, color: "bg-accent" },
-    { to: "/library/history", label: "Historial", icon: History, color: "bg-sky-600" },
     { to: "/library/downloads", label: "Descargas", icon: Download, color: "bg-emerald-600" },
   ];
 

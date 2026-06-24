@@ -25,8 +25,8 @@ interface LibraryState {
   exportPlaylist: (id: number) => Promise<string | null>;
   exportAllPlaylists: () => Promise<string | null>;
   importPlaylists: () => Promise<number | null>;
+  mergeImportIntoPlaylist: (playlistId: number) => Promise<number | null>;
   download: (song: Song) => Promise<void>;
-  recordPlay: (song: Song) => Promise<void>;
 }
 
 /** Strip characters that are invalid in filenames across platforms. */
@@ -113,6 +113,14 @@ export const useLibrary = create<LibraryState>((set, get) => ({
     return count;
   },
 
+  mergeImportIntoPlaylist: async (playlistId) => {
+    const json = await openTextFile();
+    if (json == null) return null;
+    const songs = await db.importMergeIntoPlaylist(playlistId, json);
+    await get().refreshPlaylists();
+    return songs;
+  },
+
   download: async (song) => {
     if (get().downloadMap[song.id] || get().downloadingIds.has(song.id)) return;
     set({ downloadingIds: new Set(get().downloadingIds).add(song.id) });
@@ -125,9 +133,5 @@ export const useLibrary = create<LibraryState>((set, get) => ({
       ids.delete(song.id);
       set({ downloadingIds: ids });
     }
-  },
-
-  recordPlay: async (song) => {
-    await db.addHistory(song);
   },
 }));

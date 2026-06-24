@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import type { RepeatMode, Song } from "../types";
-import { useLibrary } from "./libraryStore";
 import { getRadio } from "../lib/api";
 import {
   getSetting,
@@ -113,7 +112,6 @@ export const usePlayer = create<PlayerState>((set, get) => {
       if (autoplay) {
         await audio.play();
         set({ isPlaying: true });
-        void useLibrary.getState().recordPlay(song);
       }
     } catch (e) {
       set({ error: e instanceof Error ? e.message : String(e), isPlaying: false });

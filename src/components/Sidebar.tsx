@@ -8,7 +8,6 @@ import {
   Palette,
   User,
   Heart,
-  History as HistoryIcon,
   Download,
   ListMusic,
   Check,
@@ -29,7 +28,6 @@ const links = [
 
 const shortcuts = [
   { to: "/library/liked", label: "Me gusta", icon: Heart },
-  { to: "/library/history", label: "Historial", icon: HistoryIcon },
   { to: "/library/downloads", label: "Descargas", icon: Download },
 ];
 

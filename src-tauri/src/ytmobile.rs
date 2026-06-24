@@ -40,6 +40,10 @@ struct UrlResp {
 struct PathResp {
     path: String,
 }
+#[derive(Deserialize)]
+struct ContentsResp {
+    contents: String,
+}
 
 fn handle(app: &AppHandle) -> Result<tauri::State<'_, YoutubeMobile<Wry>>, String> {
     app.try_state::<YoutubeMobile<Wry>>()
@@ -76,4 +80,22 @@ pub fn download(app: &AppHandle, video_id: &str) -> Result<String, String> {
         .run_mobile_plugin("download", json!({ "videoId": video_id }))
         .map_err(|e| format!("descarga (Android): {e}"))?;
     Ok(resp.path)
+}
+
+/// Read a content:// URI (from the file dialog) as text via Android.
+pub fn read_text_file(app: &AppHandle, uri: &str) -> Result<String, String> {
+    let resp: ContentsResp = handle(app)?
+        .0
+        .run_mobile_plugin("readTextFile", json!({ "uri": uri }))
+        .map_err(|e| format!("leer archivo (Android): {e}"))?;
+    Ok(resp.contents)
+}
+
+/// Write text to a content:// URI (from the save dialog) via Android.
+pub fn write_text_file(app: &AppHandle, uri: &str, contents: &str) -> Result<(), String> {
+    handle(app)?
+        .0
+        .run_mobile_plugin::<serde_json::Value>("writeTextFile", json!({ "uri": uri, "contents": contents }))
+        .map_err(|e| format!("escribir archivo (Android): {e}"))?;
+    Ok(())
 }

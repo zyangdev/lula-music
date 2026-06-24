@@ -6,7 +6,6 @@ import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Library from "./pages/Library";
 import LikedSongs from "./pages/LikedSongs";
-import History from "./pages/History";
 import Downloads from "./pages/Downloads";
 import PlaylistDetail from "./pages/PlaylistDetail";
 import { convertFileSrc } from "@tauri-apps/api/core";
@@ -45,7 +44,6 @@ const router = createHashRouter([
       { path: "search", element: <Search /> },
       { path: "library", element: <Library /> },
       { path: "library/liked", element: <LikedSongs /> },
-      { path: "library/history", element: <History /> },
       { path: "library/downloads", element: <Downloads /> },
       { path: "library/playlist/:id", element: <PlaylistDetail /> },
     ],
