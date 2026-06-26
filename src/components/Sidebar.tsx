@@ -19,6 +19,7 @@ import { useLibrary } from "../store/libraryStore";
 import { openContextMenu } from "../store/contextMenuStore";
 import { buildPlaylistMenu } from "../lib/menus";
 import { promptCreatePlaylist } from "../lib/playlists";
+import { isAndroid } from "../lib/platform";
 import { getSetting } from "../lib/db";
 import UpdateButton from "./UpdateButton";
 
@@ -259,7 +260,8 @@ export default function Sidebar() {
           </div>
         )}
         <ThemePicker />
-        <UpdateButton />
+        {/* El updater de Tauri es solo de escritorio; en Android se oculta. */}
+        {!isAndroid && <UpdateButton />}
       </div>
     </aside>
   );
