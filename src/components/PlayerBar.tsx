@@ -65,7 +65,10 @@ export default function PlayerBar() {
   }, [queueOpen]);
 
   return (
-    <footer className="flex h-20 shrink-0 items-center gap-4 border-t border-border bg-surface px-4">
+    <footer
+      className="flex min-h-20 shrink-0 items-center gap-4 border-t border-border bg-surface px-4"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
       {/* Track info — click to open the full Now Playing view */}
       <button
         onClick={() => song && openNowPlaying()}
