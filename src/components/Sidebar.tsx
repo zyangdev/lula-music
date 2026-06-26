@@ -251,8 +251,12 @@ export default function Sidebar() {
         )}
       </div>
 
-      {/* Footer: profile + theme */}
-      <div className="flex flex-col gap-1 border-t border-border p-3">
+      {/* Footer: profile + theme. paddingBottom respeta la barra de navegación
+          del sistema (safe-area) en móvil, manteniendo el padding base de p-3. */}
+      <div
+        className="flex flex-col gap-1 border-t border-border p-3"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
+      >
         {profile && (
           <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted">
             <User size={18} />

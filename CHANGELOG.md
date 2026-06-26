@@ -6,6 +6,14 @@ Todas las novedades relevantes de **Lula**. El formato sigue
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-26
+
+### Fixed
+- 📱 **Android**: la **barra inferior** del reproductor y el **pie del menú lateral**
+  ya respetan la barra de navegación del sistema (*safe-area*) y no quedan tapados.
+- 📱 **Android**: se oculta el botón **«Buscar actualizaciones»** (el updater de
+  Tauri es solo de escritorio; en Android la actualización es por APK).
+
 ## [0.2.0] - 2026-06-26
 
 ### Added

@@ -1,6 +1,6 @@
 [package]
 name = "lula"
-version = "0.2.0"
+version = "0.2.1"
 description = "Lula — reproductor de música de escritorio (YouTube feed)"
 authors = ["you"]
 edition = "2021"
