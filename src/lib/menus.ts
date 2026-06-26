@@ -20,6 +20,7 @@ import { getPlaylistSongs } from "./db";
 import { usePlayer } from "../store/playerStore";
 import { useLibrary } from "../store/libraryStore";
 import { toast } from "../store/toastStore";
+import { promptCreatePlaylist } from "./playlists";
 
 export interface SongMenuContext {
   /** Row lives in the play queue at this index (adds "Quitar de la cola"). */
@@ -42,14 +43,19 @@ export function buildSongMenu(song: Song, ctx: SongMenuContext = {}): MenuItem[]
   const addToPlaylist: MenuItem = {
     label: "Añadir a playlist",
     icon: ListMusic,
-    submenu:
-      playlists.length > 0
-        ? playlists.map((p) => ({
-            label: p.name,
-            icon: ListMusic,
-            onClick: () => void useLibrary.getState().addToPlaylist(p.id, song),
-          }))
-        : [{ label: "No tienes playlists", disabled: true }],
+    submenu: [
+      { label: "Nueva playlist…", icon: Plus, onClick: () => void promptCreatePlaylist(song) },
+      ...(playlists.length > 0
+        ? [
+            { separator: true } as MenuItem,
+            ...playlists.map((p) => ({
+              label: p.name,
+              icon: ListMusic,
+              onClick: () => void useLibrary.getState().addToPlaylist(p.id, song),
+            })),
+          ]
+        : []),
+    ],
   };
 
   const items: MenuItem[] = [
@@ -99,6 +105,8 @@ export function buildPlaylistMenu(
   ctx: { onRename: () => void }
 ): MenuItem[] {
   return [
+    { label: "Nueva playlist…", icon: Plus, onClick: () => void promptCreatePlaylist() },
+    { separator: true },
     {
       label: "Reproducir",
       icon: Play,

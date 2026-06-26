@@ -54,7 +54,7 @@ export default function Search() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="p-6 pb-3">
+      <div className="p-4 pb-3 sm:p-6 sm:pb-3">
         <h1 className="mb-4 text-2xl font-bold">Buscar</h1>
         <form onSubmit={runSearch} className="flex max-w-xl items-center gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2 focus-within:border-accent">
           <SearchIcon size={18} className="text-muted" />

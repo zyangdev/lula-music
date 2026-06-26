@@ -16,6 +16,24 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  /* Never allow a horizontal scrollbar — mobile layouts should wrap/clip. */
+  overflow-x: hidden;
+}
+
+/* Row action buttons (like / add / download): hidden until hover on devices
+   that can hover (desktop), but always visible on touch screens, which have no
+   hover state — otherwise they'd be unreachable on mobile. */
+.hover-reveal {
+  transition: opacity 0.15s;
+}
+@media (hover: hover) {
+  .hover-reveal {
+    opacity: 0;
+  }
+  .group:hover .hover-reveal,
+  .hover-reveal:focus-within {
+    opacity: 1;
+  }
 }
 
 /* lucide icons render as inline SVGs by default, which adds baseline

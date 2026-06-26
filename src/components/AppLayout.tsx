@@ -6,6 +6,7 @@ import PlayerBar from "./PlayerBar";
 import NowPlaying from "./NowPlaying";
 import ContextMenu from "./ContextMenu";
 import Toaster from "./Toaster";
+import PromptDialog from "./PromptDialog";
 import { useUi } from "../store/uiStore";
 
 export default function AppLayout() {
@@ -58,7 +59,7 @@ export default function AppLayout() {
               <span className="font-semibold">Lula</span>
             </div>
           </div>
-          <div className="min-w-0 flex-1 overflow-y-auto">
+          <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
             <Outlet />
           </div>
         </main>
@@ -66,6 +67,7 @@ export default function AppLayout() {
       <PlayerBar />
       <NowPlaying />
       <ContextMenu />
+      <PromptDialog />
       <Toaster />
     </div>
   );

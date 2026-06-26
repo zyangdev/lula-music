@@ -6,6 +6,26 @@ Todas las novedades relevantes de **Lula**. El formato sigue
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-26
+
+### Added
+- ➕ **Crear playlists desde cualquier sitio**: botón «+» junto a *Playlists* en el
+  menú lateral, clic derecho sobre una playlist o en el área vacía, y la opción
+  **«Nueva playlist…»** al añadir una canción a una playlist (la crea y la añade
+  de una vez). Usa un diálogo de nombre propio (sin `prompt()` del sistema).
+
+### Changed
+- 📱 **UI móvil más pulida**: se eliminan los *scrolls horizontales* (cabeceras y
+  barras de acciones que ahora hacen *wrap*), paddings ajustados al ancho del
+  teléfono y los botones de cada canción (me gusta / añadir / descargar) ahora
+  **siempre visibles en pantallas táctiles** (antes solo aparecían al pasar el
+  ratón, quedando inaccesibles en móvil).
+
+### Fixed
+- 🐷 **Icono de la app en Android**: ahora usa un *adaptive icon* correcto (el
+  cerdito centrado sobre fondo lavanda) en vez de caer al PNG cuadrado, que en
+  los lanzadores modernos se veía como un cuadradito sobre fondo blanco.
+
 ## [0.1.3] - 2026-06-24
 
 ### Added

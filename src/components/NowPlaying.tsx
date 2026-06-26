@@ -121,7 +121,7 @@ export default function NowPlaying() {
         <div className="w-7" />
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-8 p-8 pt-2 lg:grid-cols-2">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 p-4 pt-2 sm:gap-8 sm:p-8 sm:pt-2 lg:grid-cols-2">
         {/* Left: cover + controls */}
         <div className="flex flex-col items-center justify-center gap-6">
           <div className="flex aspect-square w-full max-w-sm items-center justify-center overflow-hidden rounded-2xl bg-surface-2 shadow-2xl">

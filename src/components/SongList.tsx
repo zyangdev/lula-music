@@ -213,7 +213,7 @@ export default function SongList({
               />
             )}
 
-            <div className="flex shrink-0 items-center gap-3 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            <div className="hover-reveal flex shrink-0 items-center gap-3">
               <button
                 onClick={() => toggleLike(song)}
                 className={clsx(liked ? "text-accent" : "text-muted hover:text-text")}

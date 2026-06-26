@@ -11,12 +11,14 @@ import {
   Download,
   ListMusic,
   Check,
+  Plus,
 } from "lucide-react";
 import clsx from "clsx";
 import { useUi, ACCENTS } from "../store/uiStore";
 import { useLibrary } from "../store/libraryStore";
 import { openContextMenu } from "../store/contextMenuStore";
 import { buildPlaylistMenu } from "../lib/menus";
+import { promptCreatePlaylist } from "../lib/playlists";
 import { getSetting } from "../lib/db";
 import UpdateButton from "./UpdateButton";
 
@@ -129,8 +131,16 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      {/* Library shortcuts + playlists (scrolls when long) */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-2">
+      {/* Library shortcuts + playlists (scrolls when long).
+          Right-click anywhere in the empty area to create a playlist. */}
+      <div
+        className="min-h-0 flex-1 overflow-y-auto px-3 pb-2"
+        onContextMenu={(e) =>
+          openContextMenu(e, [
+            { label: "Nueva playlist…", icon: Plus, onClick: () => void promptCreatePlaylist() },
+          ])
+        }
+      >
         <nav className="flex flex-col gap-1">
           {shortcuts.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={navClass} onClick={closeSidebar}>
@@ -140,8 +150,18 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wide text-muted">
-          Playlists
+        <div className="flex items-center justify-between px-3 pb-1 pt-4">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Playlists
+          </span>
+          <button
+            onClick={() => void promptCreatePlaylist()}
+            className="rounded-md p-1 text-muted transition-colors hover:bg-surface-2 hover:text-text"
+            title="Nueva playlist"
+            aria-label="Nueva playlist"
+          >
+            <Plus size={16} />
+          </button>
         </div>
         {playlists.length === 0 ? (
           <p className="px-3 text-xs text-muted">

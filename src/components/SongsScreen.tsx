@@ -48,7 +48,7 @@ export default function SongsScreen({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-4 p-6 pb-4">
+      <div className="flex flex-wrap items-center gap-3 p-4 pb-4 sm:gap-4 sm:p-6">
         {icon}
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-2xl font-bold">{title}</h1>

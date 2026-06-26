@@ -57,7 +57,7 @@ export default function Library() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <h1 className="mb-5 text-2xl font-bold">Tu biblioteca</h1>
 
       <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -75,7 +75,7 @@ export default function Library() {
         ))}
       </div>
 
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold">Playlists</h2>
         <div className="flex items-center gap-2">
           <button

@@ -19,7 +19,7 @@ export default function Home() {
     hour < 6 ? "Buenas noches" : hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches";
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <h1 className="mb-5 text-2xl font-bold">{greeting} 👋</h1>
 
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Explorar géneros</h2>
